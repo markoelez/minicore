@@ -117,38 +117,36 @@ def reset():
     memory = DRAM()
     regfile = REGFILE()
 
-def get_bytes(dat, s, e):
+def get_bits(dat, s, e):
     return (dat >> e) & ((1 << (s - e + 1)) - 1)
 
 def step():
 
     # fetch
     ins = r32(regfile.pc)
-    opcode = Ops(get_bytes(ins, 6, 0))
+    opcode = Ops(get_bits(ins, 6, 0))
     print(f'{hex(regfile.pc)} {hex(ins)} <{opcode}>')
 
     match opcode:
         case Ops.JAL:
             # J-type instruction
+            rd = get_bits(ins, 11, 7)
+            imm = get_bits(ins, 31, 12)
 
-            rd = get_bytes(ins, 11, 7)
-            imm = get_bytes(ins, 31, 12)
-
-            offset = (get_bytes(ins, 31, 30) << 20 |
-                (get_bytes(ins, 30, 21) << 1) |
-                (get_bytes(ins, 21, 20) << 11) |
-                (get_bytes(ins, 19, 12) << 12))
+            offset = (get_bits(ins, 31, 30) << 20 |
+                (get_bits(ins, 30, 21) << 1) |
+                (get_bits(ins, 21, 20) << 11) |
+                (get_bits(ins, 19, 12) << 12))
 
             regfile.pc += offset
             return True
 
         case Ops.IMM:
             # I-type instruction
-
-            rd = get_bytes(ins, 11, 7)
-            rs1 = get_bytes(ins, 19, 15)
-            funct3 = Funct3(get_bytes(ins, 14, 12))
-            imm = get_bytes(ins, 31, 20)
+            rd = get_bits(ins, 11, 7)
+            rs1 = get_bits(ins, 19, 15)
+            funct3 = Funct3(get_bits(ins, 14, 12))
+            imm = get_bits(ins, 31, 20)
 
             print(funct3)
             match funct3:
@@ -161,8 +159,9 @@ def step():
                     raise Exception(f'Unknown op for opcode: {opcode}, funct3: {funct3}')
 
         case Ops.AUIPC:
-            rd = get_bytes(ins, 11, 7)
-            imm = get_bytes(ins, 31, 20)
+            # U-type instruction
+            rd = get_bits(ins, 11, 7)
+            imm = get_bits(ins, 31, 20)
             regfile[rd] = regfile.pc + imm
 
         case Ops.SYSTEM:
