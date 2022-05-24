@@ -15,7 +15,7 @@ export PATH=$PATH:/usr/local/opt/riscv-gnu-toolchain/bin
 1. Install tests
 
 ```sh
-git clone https://github.com/riscv/riscv-tests
+git clone https://github.com/riscv/riscv-tests tests
 cd riscv-tests
 git submodule update --init --recursive
 autoconf
