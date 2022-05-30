@@ -114,8 +114,8 @@ def step():
                     #print('CSRRWI', rd, rs1, csr)
                     pass
                 case Funct3.ECALL:
-                    #print('ECALL', rd, rs1, csr)
-                    if regfile[3] == 21:
+                    print('ECALL', rd, rs1, csr)
+                    if regfile[3] > 1:
                         raise Exception('FAILURE')
                 case _:
                     print(regfile)
