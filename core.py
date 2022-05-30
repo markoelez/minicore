@@ -98,9 +98,9 @@ class REGFILE:
     def __getitem__(self, key):
         return self.regs[key]
 
-    def __setitem__(self, key, val):
+    def __setitem__(self, key, value):
         if key == 0: return
-        self.regs[key] = val % 0xFFFFFFFF
+        self.regs[key] = value & 0xFFFFFFFF
 
     def __repr__(self):
         res, lvl = [], []
@@ -137,7 +137,7 @@ def step():
     ins = r32(regfile.pc)
     opcode = Ops(get_bits(ins, 6, 0))
     print(f'{hex(regfile.pc)}  {hex(ins):>10}  <{opcode}: {opcode.value}>')
-        
+
     match opcode:
         case Ops.JAL:
             # J-type instruction
@@ -193,7 +193,7 @@ def step():
         case Ops.AUIPC:
             # U-type instruction
             rd = get_bits(ins, 11, 7)
-            imm = get_bits(ins, 31, 12)
+            imm = get_bits(ins, 31, 20)
             regfile[rd] = regfile.pc + imm
 
         case Ops.SYSTEM:
@@ -207,7 +207,6 @@ def step():
                 case Funct3.CSRRW:
                     print('CSRRW', rd, rs1, csr)
                     if csr == 3072:
-                        print('SUCCESS')
                         return False
                 case Funct3.CSRRWI:
                     print('CSRRWI', rd, rs1, csr)
@@ -237,12 +236,12 @@ def step():
             match funct3:
                 case Funct3.BEQ:
                     cond = (regfile[rs1] == regfile[rs2])
+                case Funct3.BNE:
+                    cond = (regfile[rs1] != regfile[rs2])
                 case Funct3.BLT:
                     cond = (regfile[rs1] < regfile[rs2])
                 case Funct3.BGE:
                     cond = (regfile[rs1] >= regfile[rs2])
-                case Funct3.BNE:
-                    cond = (regfile[rs1] != regfile[rs2])
                 case _:
                     print(regfile)
                     raise Exception(f'Unknown op for opcode: {opcode}, funct3: {funct3}')
@@ -253,20 +252,19 @@ def step():
         case Ops.OP:
             # R-type instruction
             rd = get_bits(ins, 11, 7)
-            imm = sign_extend(get_bits(ins, 31, 20), 12)
             rs1 = get_bits(ins, 19, 15)
             rs2 = get_bits(ins, 24, 20)
             funct3 = Funct3(get_bits(ins, 14, 12))
             funct7 = get_bits(ins, 31, 25)
             match funct3:
                 case Funct3.ADD:
-                    regfile[rd] = regfile[rs1] + imm
+                    regfile[rd] = regfile[rs1] + regfile[rs2]
                 case Funct3.OR:
-                    regfile[rd] = regfile[rs1] | imm
+                    regfile[rd] = regfile[rs1] | regfile[rs2]
                 case _:
                     print(regfile)
                     raise Exception(f'Unknown op for opcode: {opcode}, funct3: {funct3}')
-
+        
         case Ops.STORE:
             # S-type instruction
             rs1 = get_bits(ins, 19, 15)
@@ -294,7 +292,12 @@ def step():
             raise Exception(f'Unknown opcode: {opcode}')
 
     print(regfile)
-    regfile.pc  += 4
+    '''
+    if hex(ins) == hex(0x7fff83b7):
+        return False
+    '''
+        
+    regfile.pc += 4
     return True
 
 if __name__ == '__main__':
