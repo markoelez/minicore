@@ -292,11 +292,6 @@ def step():
             raise Exception(f'Unknown opcode: {opcode}')
 
     print(regfile)
-    '''
-    if hex(ins) == hex(0x7fff83b7):
-        return False
-    '''
-        
     regfile.pc += 4
     return True
 
