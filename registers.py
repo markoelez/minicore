@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from config import DRAM_BASE
+from config import DRAM_BASE, BM
 
 regnames = \
     ['x0', 'ra', 'sp', 'gp', 'tp'] + [f't{x}' for x in range(3)] + ['s0', 's1'] +\
@@ -27,7 +27,7 @@ class REGFILE:
 
     def __setitem__(self, key, value):
         if key == 0: return
-        self.regs[key] = value & 0xFFFFFFFF
+        self.regs[key] = value & BM # lower 32 bits
 
     def __repr__(self):
         res, lvl = [], []

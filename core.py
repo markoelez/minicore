@@ -166,7 +166,12 @@ def step():
             funct3 = Funct3(gb(14, 12))
             funct7 = gb(31, 25)
 
-            regfile[rd] = arith(funct3, regfile[rs1], regfile[rs2])
+            if funct7 == 0b0100000:
+                # sub
+                regfile[rd] = regfile[rs1] - regfile[rs2]
+            else:
+                # add
+                regfile[rd] = arith(funct3, regfile[rs1], regfile[rs2])
         
         case Ops.STORE:
             # S-type instruction
